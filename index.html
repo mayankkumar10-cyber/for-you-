@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For You - Best Games</title>
+  <meta name="description" content="Educational and fun games with quizzes and progress tracking." />
+  <style>
+    :root {
+      --bg-color: #111;
+      --text-color: #fff;
+      --accent-color: #00ff88;
+    }
+    body.light {
+      --bg-color: #fff;
+      --text-color: #111;
+      --accent-color: #007b5f;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      text-align: center;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+    h1 { color: var(--accent-color); }
+    .game-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
+    .game-box { background: #222; border: 2px solid var(--accent-color); padding: 1rem; border-radius: 10px; width: 250px; }
+    iframe { width: 100%; height: 180px; border: none; }
+    .locked { font-size: 1.5rem; color: red; }
+    #adminPanel { display: none; background: #333; padding: 1rem; border-radius: 10px; margin-top: 1rem; }
+    input[type="password"] { padding: 0.5rem; border-radius: 5px; border: none; }
+    button { padding: 0.5rem 1rem; border: none; border-radius: 5px; background: var(--accent-color); color: var(--bg-color); cursor: pointer; }
+    .dashboard { margin-top: 2rem; background: #1a1a1a; padding: 1rem; border-radius: 10px; }
+    .dashboard.light { background: #e9e9e9; color: #111; }
+  </style>
+</head>
+<body>
+  <h1>Welcome to For You - Best Games</h1>
+  <button onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+
+  <div id="adminLogin">
+    <p>Admin Access:</p>
+    <input type="password" id="adminPassword" placeholder="Enter admin password" />
+    <button onclick="loginAdmin()">Login</button>
+  </div>
+
+  <div id="adminPanel">
+    <p>Admin Access Granted ✅</p>
+    <button onclick="resetLock()">Reset Daily Lock</button>
+  </div>
+
+  <div class="dashboard" id="userDashboard">
+    <h2>Your Learning Dashboard</h2>
+    <p><strong>Today's Progress:</strong> <span id="progress">0</span> games played</p>
+    <p><strong>Daily Goal:</strong> Play 3 educational games</p>
+  </div>
+
+  <div id="lockMessage" class="locked" style="display:none;">Time's up! Come back tomorrow!</div>
+
+  <div id="games" class="game-container">
+    <!-- Existing Games -->
+    <div class="game-box"><h3>Gummy Blocks</h3><iframe src="https://games.cdn.famobi.com/html5games/g/gummy-blocks/v180/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Tower Crash</h3><iframe src="https://games.cdn.famobi.com/html5games/t/tower-crash-3d/v010/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Penalty Shootout</h3><iframe src="https://games.cdn.famobi.com/html5games/p/penalty-shooters-2/v070/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Quiz: GK & Trivia</h3><iframe src="https://games.cdn.famobi.com/html5games/t/trivial-quiz/v040/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Quiz: Math Challenge</h3><iframe src="https://games.cdn.famobi.com/html5games/m/math-trivia-live/v010/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Word Search</h3><iframe src="https://games.cdn.famobi.com/html5games/w/word-search-classic/v100/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Quiz: Flags of the World</h3><iframe src="https://games.cdn.famobi.com/html5games/f/flags-quiz/v040/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Guess the Animal</h3><iframe src="https://games.cdn.famobi.com/html5games/g/guess-the-animal/v010/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <!-- New Educational Games -->
+    <div class="game-box"><h3>Science Quiz</h3><iframe src="https://games.cdn.famobi.com/html5games/q/quick-quiz-science/v010/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>Memory Challenge</h3><iframe src="https://games.cdn.famobi.com/html5games/m/memory-match/v010/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+    <div class="game-box"><h3>History Quiz</h3><iframe src="https://games.cdn.famobi.com/html5games/q/quick-quiz-history/v010/?fg_domain=play.famobi.com&fg_aid=A1000-1"></iframe></div>
+  </div>
+
+  <script>
+    const MAX_TIME = 20 * 60 * 1000;
+    const today = new Date().toDateString();
+    const ADMIN_PASS = btoa(today).slice(0, 8);
+    let progress = 0;
+
+    function lockSite() {
+      localStorage.setItem("locked", "true");
+      localStorage.setItem("lockDate", today);
+      document.getElementById("games").style.display = "none";
+      document.getElementById("lockMessage").style.display = "block";
+    }
+
+    function checkLock() {
+      const locked = localStorage.getItem("locked");
+      const lockDate = localStorage.getItem("lockDate");
+      if (locked === "true" && lockDate === today) {
+        lockSite();
+        return true;
+      } else {
+        localStorage.setItem("locked", "false");
+        return false;
+      }
+    }
+
+    function startTimer() {
+      setTimeout(() => {
+        lockSite();
+      }, MAX_TIME);
+    }
+
+    function loginAdmin() {
+      const pass = document.getElementById("adminPassword").value;
+      if (pass === ADMIN_PASS) {
+        document.getElementById("adminPanel").style.display = "block";
+        alert("Welcome, Admin! Today's password is valid.");
+      } else {
+        alert("Wrong password!");
+      }
+    }
+
+    function resetLock() {
+      localStorage.setItem("locked", "false");
+      alert("Lock reset for today.");
+      location.reload();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+      document.getElementById("userDashboard").classList.toggle("light");
+    }
+
+    function updateProgress() {
+      progress++;
+      document.getElementById("progress").textContent = progress;
+    }
+
+    window.onload = () => {
+      if (!checkLock()) {
+        document.getElementById("games").style.display = "flex";
+        document.getElementById("lockMessage").style.display = "none";
+        startTimer();
+
+        const iframes = document.querySelectorAll(".game-box iframe");
+        iframes.forEach(iframe => {
+          iframe.onload = updateProgress;
+        });
+      }
+    };
+  </script>
+</body>
+</html>
